@@ -29,9 +29,8 @@ export function drawLevel(ctx: CanvasRenderingContext2D, level: TileType[][]) {
     }
 }
 
-
-const tileXCount = 25;
-const tileYCount = 15;
+const tileXCount = 30;
+const tileYCount = 20;
 export function resizeCanvas(ctx: CanvasRenderingContext2D) {
     ctx.canvas.width = tileXCount * tileSize;
     ctx.canvas.height = tileYCount * tileSize;
