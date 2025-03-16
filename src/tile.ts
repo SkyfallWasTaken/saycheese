@@ -1,9 +1,14 @@
 export enum TileType {
 	Empty = 0,
 	Player = 1,
-	Box = 2,
-	Goal = 3,
-	Wall = 4,
+	Goal = 2,
+	Wall = 3,
+}
+
+export interface LevelData {
+	width: number;
+	height: number;
+	tiles: TileType[][];
 }
 
 const tileColours = {
