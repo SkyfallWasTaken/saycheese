@@ -1,25 +1,23 @@
 {
-  "name": "-saycheese",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "check": "biome check"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "typescript": "~5.6.2",
-    "unplugin-swc": "^1.5.1",
-    "vite": "^6.0.5",
-    "vite-plugin-html": "^3.2.2",
-    "vite-plugin-singlefile": "^2.1.0"
-  },
-  "trustedDependencies": [
-    "@biomejs/biome",
-    "@swc/core"
-  ],
-  "dependencies": {}
+	"name": "-saycheese",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"check": "biome check",
+		"format": "biome format --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"typescript": "~5.6.2",
+		"unplugin-swc": "^1.5.1",
+		"vite": "^6.0.5",
+		"vite-plugin-html": "^3.2.2",
+		"vite-plugin-singlefile": "^2.1.0"
+	},
+	"trustedDependencies": ["@biomejs/biome", "@swc/core"],
+	"dependencies": {}
 }

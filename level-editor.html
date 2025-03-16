@@ -1,0 +1,319 @@
+<!-- Disclosure: This is AI generated code. -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Level Editor</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root,
+      button {
+        font-family: Inter, sans-serif !important;
+        font-feature-settings: "liga" 1, "calt" 1; /* fix for Chrome */
+      }
+      @supports (font-variation-settings: normal) {
+        :root {
+          font-family: InterVariable, sans-serif;
+        }
+      }
+
+      body {
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .editor-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+      .tile-selector {
+        display: flex;
+        gap: 10px;
+      }
+      .tile-option {
+        width: 32px;
+        height: 32px;
+        border: 2px solid #ccc;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .tile-option.selected {
+        border-color: #000;
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(20, 32px);
+        grid-template-rows: repeat(8, 32px);
+        gap: 1px;
+        background-color: #ddd;
+        border: 1px solid #999;
+        margin-bottom: 20px;
+      }
+      .grid-cell {
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        margin-top: 20px;
+        font-family: monospace;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Level Editor</h1>
+
+      <div class="editor-controls">
+        <div class="tile-selector">
+          <div
+            class="tile-option selected"
+            data-type="0"
+            style="background-color: transparent"
+            title="Empty (0)"
+          ></div>
+          <div
+            class="tile-option"
+            data-type="1"
+            style="background-color: #2a71f5"
+            title="Player (1)"
+          ></div>
+          <div
+            class="tile-option"
+            data-type="2"
+            style="background-color: #eb8c34"
+            title="Box (2)"
+          ></div>
+          <div
+            class="tile-option"
+            data-type="3"
+            style="background-color: #32e329"
+            title="Goal (3)"
+          ></div>
+          <div
+            class="tile-option"
+            data-type="4"
+            style="background-color: #4b555c"
+            title="Wall (4)"
+          ></div>
+        </div>
+        <div>
+          <button id="export-btn">Export Level</button>
+          <button id="import-btn">Import Level</button>
+          <button id="clear-btn">Clear Level</button>
+        </div>
+      </div>
+
+      <div class="grid-container" id="grid"></div>
+
+      <textarea
+        id="output"
+        placeholder="Exported level will appear here..."
+      ></textarea>
+    </div>
+
+    <script>
+      // Tile types from the game
+      const TileType = {
+        Empty: 0,
+        Player: 1,
+        Box: 2,
+        Goal: 3,
+        Wall: 4,
+      };
+
+      // Tile colors from the game
+      const tileColors = {
+        [TileType.Empty]: "transparent",
+        [TileType.Player]: "#2a71f5",
+        [TileType.Box]: "#eb8c34",
+        [TileType.Goal]: "#32e329",
+        [TileType.Wall]: "#4b555c",
+      };
+
+      // Grid dimensions
+      const gridWidth = 20;
+      const gridHeight = 14;
+
+      // Initialize the level grid with Empty tiles
+      let levelGrid = Array(gridHeight)
+        .fill()
+        .map(() => Array(gridWidth).fill(TileType.Empty));
+
+      // Create a border of walls
+      for (let x = 0; x < gridWidth; x++) {
+        levelGrid[0][x] = TileType.Wall;
+        levelGrid[gridHeight - 1][x] = TileType.Wall;
+      }
+      for (let y = 0; y < gridHeight; y++) {
+        levelGrid[y][0] = TileType.Wall;
+        levelGrid[y][gridWidth - 1] = TileType.Wall;
+      }
+
+      // Current selected tile type
+      let currentTileType = TileType.Empty;
+
+      // DOM elements
+      const gridElement = document.getElementById("grid");
+      const outputElement = document.getElementById("output");
+      const exportButton = document.getElementById("export-btn");
+      const importButton = document.getElementById("import-btn");
+      const clearButton = document.getElementById("clear-btn");
+      const tileOptions = document.querySelectorAll(".tile-option");
+
+      // Create the grid cells
+      function createGrid() {
+        gridElement.innerHTML = "";
+        for (let y = 0; y < gridHeight; y++) {
+          for (let x = 0; x < gridWidth; x++) {
+            const cell = document.createElement("div");
+            cell.className = "grid-cell";
+            cell.dataset.x = x;
+            cell.dataset.y = y;
+            cell.style.backgroundColor = tileColors[levelGrid[y][x]];
+            cell.addEventListener("click", () => {
+              // Update the grid data
+              levelGrid[y][x] = currentTileType;
+              // Update the cell appearance
+              cell.style.backgroundColor = tileColors[currentTileType];
+            });
+            gridElement.appendChild(cell);
+          }
+        }
+      }
+
+      // Initialize the grid
+      createGrid();
+
+      // Set up tile selector
+      tileOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+          // Remove selected class from all options
+          tileOptions.forEach((opt) => opt.classList.remove("selected"));
+          // Add selected class to clicked option
+          option.classList.add("selected");
+          // Update current tile type
+          currentTileType = parseInt(option.dataset.type);
+        });
+      });
+
+      // Export level to JSON
+      exportButton.addEventListener("click", () => {
+        // Convert the level grid to the format used in the game
+        const levelData = {
+          width: gridWidth,
+          height: gridHeight,
+          tiles: levelGrid,
+        };
+
+        // Display the JSON in the output textarea
+        outputElement.value = JSON.stringify(levelData, null, 2);
+
+        // Also create a downloadable file
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(levelData));
+        const downloadAnchorNode = document.createElement("a");
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "level.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+      });
+
+      // Import level from JSON
+      importButton.addEventListener("click", () => {
+        try {
+          const jsonText = outputElement.value.trim();
+          if (!jsonText) {
+            alert("Please paste a level JSON in the textarea first.");
+            return;
+          }
+
+          const levelData = JSON.parse(jsonText);
+
+          // Validate the imported data
+          if (
+            !levelData.tiles ||
+            !Array.isArray(levelData.tiles) ||
+            levelData.tiles.length !== gridHeight ||
+            !levelData.tiles.every(
+              (row) => Array.isArray(row) && row.length === gridWidth
+            )
+          ) {
+            throw new Error("Invalid level format. Level must be 20x8.");
+          }
+
+          // Update the grid with imported data
+          levelGrid = levelData.tiles;
+
+          // Refresh the grid display
+          updateGridDisplay();
+
+          alert("Level imported successfully!");
+        } catch (error) {
+          alert("Error importing level: " + error.message);
+        }
+      });
+
+      // Clear the level (except borders)
+      clearButton.addEventListener("click", () => {
+        if (
+          confirm(
+            "Are you sure you want to clear the level? This will reset all tiles except the border walls."
+          )
+        ) {
+          // Reset the grid to empty tiles
+          for (let y = 1; y < gridHeight - 1; y++) {
+            for (let x = 1; x < gridWidth - 1; x++) {
+              levelGrid[y][x] = TileType.Empty;
+            }
+          }
+
+          // Refresh the grid display
+          updateGridDisplay();
+        }
+      });
+
+      // Update the grid display based on the current levelGrid data
+      function updateGridDisplay() {
+        const cells = document.querySelectorAll(".grid-cell");
+        cells.forEach((cell) => {
+          const x = parseInt(cell.dataset.x);
+          const y = parseInt(cell.dataset.y);
+          cell.style.backgroundColor = tileColors[levelGrid[y][x]];
+        });
+      }
+    </script>
+  </body>
+</html>
