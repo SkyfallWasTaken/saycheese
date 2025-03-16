@@ -38,6 +38,18 @@
         margin-bottom: 20px;
         align-items: center;
       }
+      .symmetry-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+      .symmetry-option {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+      }
       .tile-selector {
         display: flex;
         gap: 10px;
@@ -130,6 +142,26 @@
         </div>
       </div>
 
+      <div class="symmetry-controls">
+        <div>Symmetry Mode:</div>
+        <div class="symmetry-option">
+          <input type="checkbox" id="symmetry-enabled" />
+          <label for="symmetry-enabled">Enable Symmetry</label>
+        </div>
+        <div class="symmetry-option">
+          <input type="radio" name="symmetry-type" id="symmetry-horizontal" value="horizontal" checked />
+          <label for="symmetry-horizontal">Horizontal</label>
+        </div>
+        <div class="symmetry-option">
+          <input type="radio" name="symmetry-type" id="symmetry-vertical" value="vertical" />
+          <label for="symmetry-vertical">Vertical</label>
+        </div>
+        <div class="symmetry-option">
+          <input type="radio" name="symmetry-type" id="symmetry-both" value="both" />
+          <label for="symmetry-both">Both</label>
+        </div>
+      </div>
+
       <div class="grid-container" id="grid"></div>
 
       <textarea
@@ -176,6 +208,13 @@
 
       // Current selected tile type
       let currentTileType = TileType.Empty;
+      
+      // Symmetry mode state
+      let isSymmetryEnabled = false;
+      let symmetryType = "horizontal"; // horizontal, vertical, or both
+      
+      // Dragging state
+      let isDragging = false;
 
       // DOM elements
       const gridElement = document.getElementById("grid");
@@ -184,6 +223,78 @@
       const importButton = document.getElementById("import-btn");
       const clearButton = document.getElementById("clear-btn");
       const tileOptions = document.querySelectorAll(".tile-option");
+      const symmetryEnabledCheckbox = document.getElementById("symmetry-enabled");
+      const symmetryTypeRadios = document.querySelectorAll('input[name="symmetry-type"]');
+
+
+      // Function to update a cell and its symmetric counterparts
+      function updateCellSymmetrically(x, y, tileType) {
+        // Update the original cell
+        levelGrid[y][x] = tileType;
+        
+        // If symmetry is not enabled, just update the original cell
+        if (!isSymmetryEnabled) {
+          return;
+        }
+        
+        // Calculate center points for symmetry
+        const centerX = Math.floor(gridWidth / 2);
+        const centerY = Math.floor(gridHeight / 2);
+        
+        // Calculate symmetric coordinates
+        let symmetricX, symmetricY;
+        
+        if (symmetryType === "horizontal" || symmetryType === "both") {
+          // Horizontal symmetry (across vertical axis)
+          symmetricX = gridWidth - 1 - x;
+          symmetricY = y;
+          
+          // Update horizontally symmetric cell
+          if (symmetricX >= 0 && symmetricX < gridWidth && symmetricY >= 0 && symmetricY < gridHeight) {
+            levelGrid[symmetricY][symmetricX] = tileType;
+            
+            // Update the cell appearance if it exists in the DOM
+            const symmetricCell = document.querySelector(`.grid-cell[data-x="${symmetricX}"][data-y="${symmetricY}"]`);
+            if (symmetricCell) {
+              symmetricCell.style.backgroundColor = tileColors[tileType];
+            }
+          }
+        }
+        
+        if (symmetryType === "vertical" || symmetryType === "both") {
+          // Vertical symmetry (across horizontal axis)
+          symmetricX = x;
+          symmetricY = gridHeight - 1 - y;
+          
+          // Update vertically symmetric cell
+          if (symmetricX >= 0 && symmetricX < gridWidth && symmetricY >= 0 && symmetricY < gridHeight) {
+            levelGrid[symmetricY][symmetricX] = tileType;
+            
+            // Update the cell appearance if it exists in the DOM
+            const symmetricCell = document.querySelector(`.grid-cell[data-x="${symmetricX}"][data-y="${symmetricY}"]`);
+            if (symmetricCell) {
+              symmetricCell.style.backgroundColor = tileColors[tileType];
+            }
+          }
+        }
+        
+        if (symmetryType === "both") {
+          // Diagonal symmetry (across both axes)
+          symmetricX = gridWidth - 1 - x;
+          symmetricY = gridHeight - 1 - y;
+          
+          // Update diagonally symmetric cell
+          if (symmetricX >= 0 && symmetricX < gridWidth && symmetricY >= 0 && symmetricY < gridHeight) {
+            levelGrid[symmetricY][symmetricX] = tileType;
+            
+            // Update the cell appearance if it exists in the DOM
+            const symmetricCell = document.querySelector(`.grid-cell[data-x="${symmetricX}"][data-y="${symmetricY}"]`);
+            if (symmetricCell) {
+              symmetricCell.style.backgroundColor = tileColors[tileType];
+            }
+          }
+        }
+      }
 
       // Create the grid cells
       function createGrid() {
@@ -196,8 +307,8 @@
             cell.dataset.y = y;
             cell.style.backgroundColor = tileColors[levelGrid[y][x]];
             cell.addEventListener("mousedown", () => {
-              // Update the grid data
-              levelGrid[y][x] = currentTileType;
+              // Update the grid data with symmetry
+              updateCellSymmetrically(x, y, currentTileType);
               // Update the cell appearance
               cell.style.backgroundColor = tileColors[currentTileType];
               // Start dragging
@@ -205,9 +316,9 @@
             });
             
             cell.addEventListener("mousemove", () => {
-              // If dragging, update the cell
+              // If dragging, update the cell with symmetry
               if (isDragging) {
-                levelGrid[y][x] = currentTileType;
+                updateCellSymmetrically(x, y, currentTileType);
                 cell.style.backgroundColor = tileColors[currentTileType];
               }
             });
@@ -223,6 +334,19 @@
 
       // Initialize the grid
       createGrid();
+      
+      // Set up symmetry controls
+      symmetryEnabledCheckbox.addEventListener("change", () => {
+        isSymmetryEnabled = symmetryEnabledCheckbox.checked;
+      });
+      
+      symmetryTypeRadios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+          if (radio.checked) {
+            symmetryType = radio.value;
+          }
+        });
+      });
 
       // Set up tile selector
       tileOptions.forEach((option) => {
