@@ -1,7 +1,8 @@
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { createHtmlPlugin } from "vite-plugin-html";
+import { defineConfig } from "vite";
 
-export default {
+export default defineConfig(({ command }) => ({
 	plugins: [
 		createHtmlPlugin({
 			minify: false,
@@ -10,11 +11,13 @@ export default {
 					filename: "index.html",
 					template: "index.html",
 				},
-				{
-					filename: "level-editor.html",
-					template: "level-editor.html",
-				},
-			],
+				command === "serve"
+					? {
+							filename: "level-editor.html",
+							template: "level-editor.html",
+						}
+					: undefined,
+			].filter(Boolean),
 		}),
 		viteSingleFile(),
 	],
@@ -22,6 +25,7 @@ export default {
 		//minify: 'terser',
 		//cssMinify: 'esbuild',
 		modulePreload: false,
+		inlineDynamicImports: false,
 		// terserOptions: {
 		//     parse: {
 		//         html5_comments: false,
@@ -38,4 +42,4 @@ export default {
 		//     }
 		// },
 	},
-};
+}));
