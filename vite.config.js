@@ -5,7 +5,7 @@ import { defineConfig } from "vite";
 export default defineConfig(({ command }) => ({
 	plugins: [
 		createHtmlPlugin({
-			minify: false,
+			minify: true,
 			pages: [
 				{
 					filename: "index.html",
@@ -22,24 +22,27 @@ export default defineConfig(({ command }) => ({
 		viteSingleFile(),
 	],
 	build: {
-		//minify: 'terser',
+		minify: "terser",
 		//cssMinify: 'esbuild',
 		modulePreload: false,
 		inlineDynamicImports: false,
-		// terserOptions: {
-		//     parse: {
-		//         html5_comments: false,
-		//     },
-		//     compress: {
-		//         drop_console: true,
-		//         drop_debugger: true,
-		//         keep_infinity: true,
-		//         module: true,
-		//         passes: 5,
-		//     },
-		//     format: {
-		//         comments: false,
-		//     }
-		// },
+		terserOptions:
+			command === "build"
+				? {
+						parse: {
+							html5_comments: false,
+						},
+						compress: {
+							drop_console: true,
+							drop_debugger: true,
+							keep_infinity: true,
+							module: true,
+							passes: 5,
+						},
+						format: {
+							comments: false,
+						},
+					}
+				: undefined,
 	},
 }));

@@ -195,11 +195,26 @@
             cell.dataset.x = x;
             cell.dataset.y = y;
             cell.style.backgroundColor = tileColors[levelGrid[y][x]];
-            cell.addEventListener("click", () => {
+            cell.addEventListener("mousedown", () => {
               // Update the grid data
               levelGrid[y][x] = currentTileType;
               // Update the cell appearance
               cell.style.backgroundColor = tileColors[currentTileType];
+              // Start dragging
+              isDragging = true;
+            });
+            
+            cell.addEventListener("mousemove", () => {
+              // If dragging, update the cell
+              if (isDragging) {
+                levelGrid[y][x] = currentTileType;
+                cell.style.backgroundColor = tileColors[currentTileType];
+              }
+            });
+            
+            cell.addEventListener("mouseup", () => {
+              // Stop dragging
+              isDragging = false;
             });
             gridElement.appendChild(cell);
           }
