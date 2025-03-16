@@ -150,6 +150,11 @@ function loop() {
   resizeCanvas(ctx);
   drawLevel(ctx);
   requestAnimationFrame(loop);
+
+  // biome-ignore lint/style/noNonNullAssertion: <explanation>
+  document.getElementById("level-title")!.textContent = `Level ${
+    currentLevel + 1
+  }`;
 }
 
 handleMovement();
